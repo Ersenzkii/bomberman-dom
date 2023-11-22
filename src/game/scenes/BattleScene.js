@@ -1,0 +1,59 @@
+import {
+	Scene
+} from 'engine/Scene.js';
+import {
+	Stage
+} from '../entities/Stage.js';
+import {
+	HALF_TILE_SIZE,
+	STAGE_OFFSET_Y
+} from '../constants/game.js';
+import {
+	battleHud
+} from '../entities/battleHud.js';
+import {
+	bomberman
+} from '../entities/bomberman.js';
+import {
+	BombSystem
+} from '../systems/BombSystem.js';
+import { BlockSystem } from '../systems/BlockSystem.js';
+
+export class BattleScene extends Scene {
+	constructor(time, camera) {
+		super();
+
+		this.stage = new Stage();
+		this.hud = new battleHud();
+		this.blockSystem = new BlockSystem(this.stage.updateMapAt, this.stage.getCollisionTileAt);
+		this.bombSystem = new BombSystem(this.stage.collisionMap, this.blockSystem.add);
+		this.player = new bomberman({
+			x: 2,
+			y: 1
+		},
+		time,
+		this.stage.getCollisionTileAt,
+		this.bombSystem.add,
+		);
+
+		camera.position = {
+			x: HALF_TILE_SIZE,
+			y: -STAGE_OFFSET_Y
+		}
+	}
+
+	update(time) {
+		this.blockSystem.update(time);
+		this.bombSystem.update(time);
+		this.player.update(time);
+	}
+
+	draw(context, camera) {
+		this.stage.draw(context, camera);
+		this.hud.draw(context);
+
+		this.blockSystem.draw(context, camera);
+		this.bombSystem.draw(context, camera);
+		this.player.draw(context, camera);
+	}
+}
